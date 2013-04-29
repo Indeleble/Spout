@@ -33,7 +33,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.spout.api.Spout;
-import org.spout.api.chat.ChatArguments;
 import org.spout.api.gui.Screen;
 import org.spout.api.gui.Widget;
 import org.spout.api.gui.component.LabelComponent;
@@ -99,7 +98,7 @@ public class DevConsole extends Screen{
 		LabelComponent lbl = textfield.add(LabelComponent.class);
 		lbl.setFont(font);
 		lbl.setColor(Color.WHITE);
-		lbl.setText(new ChatArguments("_"));
+		lbl.setText("_");
 		attachWidget(plugin, textfield);
 	}
 
@@ -111,19 +110,19 @@ public class DevConsole extends Screen{
 		this.dateFormat = format;
 	}
 
-	public void addMessage(ChatArguments message) {
+	public void addMessage(String message) {
 		Widget wid = new SpoutWidget();
 		wid.getTransform().setPosition(-0.95f, 0.9f - scroll);
 		LabelComponent txt = wid.add(LabelComponent.class);
 
 		txt.setColor(Color.WHITE);
 		txt.setFont(font);
-		ChatArguments outputText = new ChatArguments();
+		StringBuilder builder = new StringBuilder();
 		if (dateFormat != null) {
-			outputText.append("[").append(dateFormat.format(new Date())).append("] ");
+			builder.append("[").append(dateFormat.format(new Date())).append("] ");
 		}
-		outputText.append(message.getExpandedPlaceholders());
-		txt.setText(outputText);
+		builder.append(message);
+		txt.setText(builder.toString());
 
 		scroll += 0.05f;//font.getCharHeight();
 		lines.add(wid);

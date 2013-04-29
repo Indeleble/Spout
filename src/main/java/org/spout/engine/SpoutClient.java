@@ -49,12 +49,8 @@ import org.spout.api.Client;
 import org.spout.api.FileSystem;
 import org.spout.api.Platform;
 import org.spout.api.audio.SoundManager;
-import org.spout.api.chat.ChatArguments;
-import org.spout.api.chat.style.ChatStyle;
-import org.spout.api.command.CommandRegistrationsFactory;
 import org.spout.api.command.CommandSource;
-import org.spout.api.command.annotated.AnnotatedCommandRegistrationFactory;
-import org.spout.api.command.annotated.SimpleInjector;
+import org.spout.api.command.annotated.AnnotatedCommandExecutorFactory;
 import org.spout.api.component.impl.AnimationComponent;
 import org.spout.api.component.impl.CameraComponent;
 import org.spout.api.component.impl.InteractComponent;
@@ -81,6 +77,7 @@ import org.spout.api.render.RenderMode;
 
 import org.spout.engine.audio.SpoutSoundManager;
 import org.spout.engine.command.InputCommands;
+import org.spout.engine.command.RendererCommands;
 import org.spout.engine.entity.SpoutClientPlayer;
 import org.spout.engine.entity.SpoutPlayer;
 import org.spout.engine.entity.component.ClientTextModelComponent;
@@ -155,10 +152,10 @@ public class SpoutClient extends SpoutEngine implements Client {
 		super.start(checkWorlds);
 
 		getEventManager().registerEvents(new SpoutClientListener(this), this);
-		CommandRegistrationsFactory<Class<?>> commandRegFactory = new AnnotatedCommandRegistrationFactory(this, new SimpleInjector(this));
 
 		// Register commands
-		getRootCommand().addSubCommands(this, InputCommands.class, commandRegFactory);
+		AnnotatedCommandExecutorFactory.create(new InputCommands(this));
+		AnnotatedCommandExecutorFactory.create(new RendererCommands(this));
 
 		while (super.getDefaultWorld() == null) {
 			try {
@@ -199,7 +196,7 @@ public class SpoutClient extends SpoutEngine implements Client {
 				ac.setSpeed(1);
 
 				ClientTextModelComponent tmc = e.add(ClientTextModelComponent.class);
-				tmc.setText(new ChatArguments(ChatStyle.BLUE, "Sp", ChatStyle.WHITE, "ou", ChatStyle.RED, "ty"));
+				tmc.setText("Spouty");
 				tmc.setSize(0.5f);
 				tmc.setTranslation(new Vector3(0, 3f, 0));
 				tmc.setFont(font);

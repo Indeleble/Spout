@@ -28,10 +28,12 @@ package org.spout.engine.command;
 
 import org.spout.api.Engine;
 import org.spout.api.command.Command;
-import org.spout.api.command.CommandContext;
-import org.spout.api.command.CommandExecutor;
+import org.spout.api.command.CommandArguments;
+import org.spout.api.command.CommandManager;
 import org.spout.api.command.CommandSource;
+import org.spout.api.command.Executor;
 import org.spout.api.command.annotated.Binding;
+import org.spout.api.command.filter.PlayerFilter;
 import org.spout.api.entity.Player;
 import org.spout.api.entity.state.PlayerInputState;
 import org.spout.api.exception.CommandException;
@@ -50,12 +52,12 @@ public class InputCommands {
 	}
 
 	@org.spout.api.command.annotated.Command(aliases = "dev_console", desc = "Toggle display of debugging info.", min = 1, max = 1)
-	@Binding(keys = Keyboard.KEY_F2, async = true)
-	public void devConsole(CommandContext args, CommandSource source) {
+	@Binding(value = Keyboard.KEY_F2, async = true)
+	public void devConsole(CommandSource source, CommandArguments args) throws CommandException {
 		if (!args.getString(0).equalsIgnoreCase("+")) {
 			return;
 		}
-		final Screen consoleScreen = (Screen) client.getScreenStack().getConsole();
+		final Screen consoleScreen = client.getScreenStack().getConsole();
 		client.getScheduler().enqueueRenderTask(new Runnable() {
 			public void run() {
 				if (client.getScreenStack().isOpened(consoleScreen)) {
@@ -68,8 +70,8 @@ public class InputCommands {
 	}
 
 	@org.spout.api.command.annotated.Command(aliases = "debug_info", desc = "Toggle display of debugging info.", min = 1, max = 1)
-	@Binding(keys = Keyboard.KEY_F3, async = true)
-	public void debugInfo(CommandContext args, CommandSource source) {
+	@Binding(value = Keyboard.KEY_F3, async = true)
+	public void debugInfo(CommandSource source, CommandArguments args) throws CommandException {
 		if (!args.getString(0).equalsIgnoreCase("+")) {
 			return;
 		}
@@ -85,24 +87,27 @@ public class InputCommands {
 		});
 	}
 
-	public static void setupInputCommands(Engine engine, Command parent) {
+	public static void setupInputCommands(Engine engine) {
+		CommandManager cm = engine.getCommandManager();
 		for (PlayerInputState.Flags flag : PlayerInputState.Flags.values()) {
-			parent.addSubCommand(engine, flag.name())
-					.setArgBounds(1, 1)
+			engine.getCommandManager().getCommand(flag.name())
+					.setArgumentBounds(1, 1)
 					.setHelp("Adds the " + flag.name() + " flag to the calling player's input state")
 					.setExecutor(new InputFlagHandler(flag));
 		}
-		parent.addSubCommand(engine, "dx")
+		cm.getCommand("dx")
 				.setHelp("Adds the x distance traveled to the calling player's input state.")
 				.setExecutor(new InputMouseYawHandler())
-				.setArgBounds(1, 1);
-		parent.addSubCommand(engine, "dy")
+				.addFilter(new PlayerFilter())
+				.setArgumentBounds(1, 1);
+		cm.getCommand("dy")
 				.setHelp("Adds the y distance traveled to the calling player's input state.")
 				.setExecutor(new InputMousePitchHandler())
-				.setArgBounds(1, 1);
+				.addFilter(new PlayerFilter())
+				.setArgumentBounds(1, 1);
 	}
 
-	public static class InputFlagHandler implements CommandExecutor {
+	public static class InputFlagHandler implements Executor {
 		private final PlayerInputState.Flags flag;
 
 		public InputFlagHandler(PlayerInputState.Flags flag) {
@@ -110,7 +115,7 @@ public class InputCommands {
 		}
 
 		@Override
-		public void processCommand(CommandSource source, Command command, CommandContext args) throws CommandException {
+		public void execute(CommandSource source, Command command, CommandArguments args) throws CommandException {
 			if (!(source instanceof Player)) {
 				throw new CommandException("Source must be a player!");
 			}
@@ -123,12 +128,9 @@ public class InputCommands {
 		}
 	}
 
-	public static class InputMousePitchHandler implements CommandExecutor {
+	public static class InputMousePitchHandler implements Executor {
 		@Override
-		public void processCommand(CommandSource source, Command command, CommandContext args) throws CommandException {
-			if (!(source instanceof Player)) {
-				throw new CommandException("Source must be a player!");
-			}
+		public void execute(CommandSource source, Command command, CommandArguments args) throws CommandException {
 			int d;
 			try {
 				d = args.getInteger(0);
@@ -140,12 +142,9 @@ public class InputCommands {
 		}
 	}
 
-	public static class InputMouseYawHandler implements CommandExecutor {
+	public static class InputMouseYawHandler implements Executor {
 		@Override
-		public void processCommand(CommandSource source, Command command, CommandContext args) throws CommandException {
-			if (!(source instanceof Player)) {
-				throw new CommandException("Source must be a player!");
-			}
+		public void execute(CommandSource source, Command command, CommandArguments args) throws CommandException {
 			int d;
 			try {
 				d = args.getInteger(0);

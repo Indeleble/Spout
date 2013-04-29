@@ -31,7 +31,6 @@ import java.util.Map;
 
 import org.spout.api.Client;
 import org.spout.api.Spout;
-import org.spout.api.chat.ChatArguments;
 import org.spout.api.gui.DebugHud;
 import org.spout.api.gui.Screen;
 import org.spout.api.gui.Widget;
@@ -118,10 +117,10 @@ public class DebugScreen extends Screen implements DebugHud {
 		 * Spout can display more than one line
 		 * @param id, arg
 		 */
-		public void spoutUpdate(int id, ChatArguments arg) {
+		public void spoutUpdate(int id, String arg) {
 			if (spoutMessages.containsKey(id)) {
 				LabelComponent lbl = spoutMessages.get(id).get(LabelComponent.class);
-				if (!arg.toFormatString().equals(lbl.getText().toFormatString())) {
+				if (!arg.equals(lbl.getText())) {
 					lbl.setText(arg);
 				}
 			} else {
@@ -135,10 +134,10 @@ public class DebugScreen extends Screen implements DebugHud {
 			}
 		}
 		
-		public void updateParameter(Plugin plug, ChatArguments arg) {
+		public void updateParameter(Plugin plug, String arg) {
 			if (messages.containsKey(plug)) {
 				LabelComponent lbl = messages.get(plug).get(LabelComponent.class);
-				if (!arg.toFormatString().equals(lbl.getText().toFormatString())) {
+				if (!arg.equals(lbl.getText())) {
 					lbl.setText(arg);
 				}
 			} else {

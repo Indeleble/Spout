@@ -39,10 +39,11 @@ import java.util.Map.Entry;
 import org.spout.api.Client;
 import org.spout.api.Platform;
 import org.spout.api.Spout;
-import org.spout.api.command.CommandContext;
+import org.spout.api.command.CommandArguments;
 import org.spout.api.command.CommandSource;
 import org.spout.api.command.annotated.Command;
 import org.spout.api.command.annotated.CommandPermissions;
+import org.spout.api.command.annotated.CommandPlatform;
 import org.spout.api.component.impl.AnimationComponent;
 import org.spout.api.component.impl.InteractComponent;
 import org.spout.api.entity.Entity;
@@ -73,6 +74,7 @@ import org.spout.api.model.animation.Animation;
 import org.spout.api.model.animation.Skeleton;
 import org.spout.api.plugin.CommonPluginManager;
 import org.spout.api.plugin.Plugin;
+
 import org.spout.engine.SpoutClient;
 import org.spout.engine.SpoutEngine;
 import org.spout.engine.entity.SpoutPlayer;
@@ -89,11 +91,8 @@ public class TestCommands {
 
 	@Command(aliases = "widget", usage = "<button|checkbox|radio|combo|list|label|slider|spinner|textfield|rect>",
 			desc = "Renders a widget on your screen.", min = 1, max = 1)
-	public void widget(CommandContext args, CommandSource source) throws CommandException {
-		if (!(engine instanceof Client)) {
-			throw new CommandException("This command is only available on the client.");
-		}
-
+	@CommandPlatform(Platform.CLIENT)
+	public void widget(CommandSource source, CommandArguments args) throws CommandException {
 		Client client = (Client) engine;
 		Screen screen = new Screen();
 		Widget widget = client.getScreenStack().createWidget();
@@ -124,10 +123,8 @@ public class TestCommands {
 	}
 
 	@Command(aliases = "break", desc = "Debug command to break a block")
-	public void debugBreak(CommandContext args, CommandSource source) throws CommandException {
-		if (!(engine instanceof Client)) {
-			return;
-		}
+	@CommandPlatform(Platform.CLIENT)
+	public void debugBreak(CommandSource source, CommandArguments args) throws CommandException {
 		Client client = (Client) engine;
 		Player player = client.getActivePlayer();
 		Block block = player.get(InteractComponent.class).getTargetBlock();
@@ -135,30 +132,30 @@ public class TestCommands {
 		if (block == null || block.getMaterial().equals(BlockMaterial.AIR)) {
 			source.sendMessage("No blocks in range.");
 		} else {
-			source.sendMessage("Block to break: ", block.toString());
+			source.sendMessage("Block to break: " + block.toString());
 			block.setMaterial(BlockMaterial.AIR);
 		}
 	}
 
 	@Command(aliases = {"dbg"}, desc = "Debug Output")
-	public void debugOutput(CommandContext args, CommandSource source) {
+	public void debugOutput(CommandSource source, CommandArguments args) {
 		World world = engine.getDefaultWorld();
-		source.sendMessage("World Entity count: ", world.getAll().size());
+		source.sendMessage("World Entity count: " + world.getAll().size());
 	}
 
 	@Command(aliases = "dumpthreads", desc = "Dumps a listing of all thread stacks to the console")
-	public void dumpThreads(CommandContext args, CommandSource source) throws CommandException {
+	public void dumpThreads(CommandSource source, CommandArguments args) throws CommandException {
 		AsyncExecutorUtils.dumpAllStacks();
 	}
 
 	@Command(aliases = "testmsg", desc = "Test extracting chat styles from a message and printing them")
-	public void testMsg(CommandContext args, CommandSource source) throws CommandException {
+	public void testMsg(CommandSource source, CommandArguments args) throws CommandException {
 		source.sendMessage(args.getJoinedString(0));
 	}
 
 	@Command(aliases = "plugins-tofile", usage = "[filename]", desc = "Creates a file containing all loaded plugins and their version", min = 0, max = 1)
 	@CommandPermissions("spout.command.pluginstofile")
-	public void getPluginDetails(CommandContext args, CommandSource source) throws CommandException {
+	public void getPluginDetails(CommandSource source, CommandArguments args) throws CommandException {
 
 		// File and filename
 		String filename = "";
@@ -252,7 +249,7 @@ public class TestCommands {
 	}
 
 	@Command(aliases = {"move"}, desc = "Move a entity with his Id", min = 4, max = 4)
-	public void moveEntity(CommandContext args, CommandSource source) throws CommandException {
+	public void moveEntity(CommandSource source, CommandArguments args) throws CommandException {
 		SpoutPlayer player;
 		if (!(source instanceof Player)) {
 			if (engine.getPlatform() == Platform.CLIENT) {
@@ -265,9 +262,9 @@ public class TestCommands {
 		}
 
 		int id = args.getInteger(0);
-		float x = args.getFloat(1);
-		float y = args.getFloat(2);
-		float z = args.getFloat(3);
+		float x = (float) args.getDouble(1);
+		float y = (float) args.getDouble(2);
+		float z = (float) args.getDouble(3);
 
 		Entity e = player.getWorld().getEntity(id);
 
@@ -281,7 +278,7 @@ public class TestCommands {
 	}
 
 	@Command(aliases = {"rotate"}, desc = "Rotate a entity with his Id", min = 4, max = 4)
-	public void rotateEntity(CommandContext args, CommandSource source) throws CommandException {
+	public void rotateEntity(CommandSource source, CommandArguments args) throws CommandException {
 		SpoutPlayer player;
 		if (!(source instanceof Player)) {
 			if (engine.getPlatform() == Platform.CLIENT) {
@@ -294,9 +291,9 @@ public class TestCommands {
 		}
 
 		int id = args.getInteger(0);
-		float pitch = args.getFloat(1);
-		float yaw = args.getFloat(2);
-		float roll = args.getFloat(3);
+		float pitch = (float) args.getDouble(1);
+		float yaw = (float) args.getDouble(2);
+		float roll = (float) args.getDouble(3);
 
 		Entity e = player.getWorld().getEntity(id);
 
@@ -309,7 +306,7 @@ public class TestCommands {
 	}
 
 	@Command(aliases = {"scale"}, desc = "Scale a entity with his Id", min = 4, max = 4)
-	public void scaleEntity(CommandContext args, CommandSource source) throws CommandException {
+	public void scaleEntity(CommandSource source, CommandArguments args) throws CommandException {
 		SpoutPlayer player;
 		if (!(source instanceof Player)) {
 			if (engine.getPlatform() == Platform.CLIENT) {
@@ -322,9 +319,9 @@ public class TestCommands {
 		}
 
 		int id = args.getInteger(0);
-		float x = args.getFloat(1);
-		float y = args.getFloat(2);
-		float z = args.getFloat(3);
+		float x = (float) args.getDouble(1);
+		float y = (float) args.getDouble(2);
+		float z = (float) args.getDouble(3);
 
 		Entity e = player.getWorld().getEntity(id);
 
@@ -340,7 +337,7 @@ public class TestCommands {
 	}
 
 	@Command(aliases = {"animstart"}, desc = "Launch a animation his Id", min = 2, max = 3)
-	public void playAnimation(CommandContext args, CommandSource source) throws CommandException {
+	public void playAnimation(CommandSource source, CommandArguments args) throws CommandException {
 		SpoutPlayer player;
 		if (!(source instanceof Player)) {
 			if (engine.getPlatform() == Platform.CLIENT) {
@@ -389,13 +386,13 @@ public class TestCommands {
 
 		AnimationComponent ac = e.get(AnimationComponent.class);
 
-		ac.playAnimation(model, animation, args.length() > 2 ? args.getString(2).equalsIgnoreCase("on") : false);
+		ac.playAnimation(model, animation, args.length() > 2 && args.getString(2).equalsIgnoreCase("on"));
 
 		source.sendMessage("Entity " + id + " play " + animation.getName());
 	}
 
 	@Command(aliases = {"animstop"}, desc = "Stop all animation on a entity", min = 1, max = 1)
-	public void stopAnimation(CommandContext args, CommandSource source) throws CommandException {
+	public void stopAnimation(CommandSource source, CommandArguments args) throws CommandException {
 		SpoutPlayer player;
 		if (!(source instanceof Player)) {
 			if (engine.getPlatform() == Platform.CLIENT) {
@@ -429,7 +426,7 @@ public class TestCommands {
 	}
 	
 	@Command(aliases = {"profpop"}, desc = "Prints the populator profiler results to console", min = 0, max = 0)
-	public void profilePopulator(CommandContext args, CommandSource source) throws CommandException {
+	public void profilePopulator(CommandSource source, CommandArguments args) throws CommandException {
 		Spout.getLogger().info("");
 		Spout.getLogger().info("Populator profiler results");
 		long totalPopulator = 0;
@@ -456,7 +453,7 @@ public class TestCommands {
 	 * Replaces chars which are not allowed in filenames on windows with "-".
 	 */
 	private String replaceInvalidCharsWin(String s) {
-		if (System.getProperty("os.name").toLowerCase().indexOf("win") >= 0) {
+		if (System.getProperty("os.name").toLowerCase().contains("win")) {
 			return s.replaceAll("[\\/:*?\"<>|]", "-");
 		} else {
 			return s;
